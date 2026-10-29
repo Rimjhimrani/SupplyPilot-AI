@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SupplyPilot AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <svg width="36" height="36" viewBox="0 0 42 42" aria-hidden="true">
+        <rect width="42" height="42" rx="10" fill="var(--accent)"/>
+        <path d="M21 8 L31 32 L21 27 L11 32 Z" fill="var(--accent-ink)"/>
+        <circle cx="21" cy="19" r="2.4" fill="var(--accent)"/>
+      </svg>
+      <div><div class="bname">SupplyPilot AI</div><p>Supply chain control tower</p></div>
+    </div>
+    <nav class="nav" id="nav" aria-label="Views">
+      <a href="#overview" data-view="overview"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18a8 8 0 1116 0"/><path d="M12 18l4-6"/></svg>Overview</a>
+      <a href="#tower" data-view="tower"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 000-6H9a3 3 0 010-6h6.5"/></svg>Control tower</a>
+    </nav>
+    <div class="modebox"><b>Simulation mode</b><span>Data is synthetic and every action is simulated. Nothing is sent to carriers or suppliers.</span></div>
+  </aside>
+
+  <div class="content">
+  <section class="view" id="view-overview" aria-labelledby="ovTitle">
+    <div class="wrap">
+      <header class="top">
+        <div><h1 id="ovTitle">Executive overview</h1><p class="sub">Portfolio health at a glance. History is synthetic; the last point of each chart updates live from the simulator.</p></div>
+        <div class="top-actions"><span class="badge" id="ovStamp">Loading…</span><button class="btn-quiet" id="ovRefresh" type="button">Refresh</button></div>
+      </header>
+      <div id="ovBody"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-tower" hidden aria-labelledby="twTitle">
+  <div class="wrap">
+  <header class="top">
+    <div><h1 id="twTitle">Control tower</h1><p class="sub">Trigger a disruption and watch the agent crew respond. Simulated data and simulated actions.</p></div>
+    <div class="top-actions">
+      <label class="auto" for="autopilot">
+        <input type="checkbox" id="autopilot" autocomplete="off"><span class="sw"></span>
+        <span><b>Autopilot</b><small>Off by default. Simulation only.</small></span>
+      </label>
+      <button class="btn-quiet" id="reset" type="button">Reset demo</button>
+    </div>
+  </header>
+  <p class="warnnote" id="autoNote" hidden>Autopilot approves the recommended plan without asking you. That is safe here because every action is simulated. A real deployment should keep a human approval step for costly or hard-to-undo actions.</p>
+
+  <section class="kpis" id="kpis" aria-label="Key metrics"></section>
+
+  <section class="sim">
+    <div>
+      <h2>Try a disruption</h2>
+      <p>Pick an event. The agent crew spots it, weighs options, and acts.</p>
+    </div>
+    <div class="sim-btns" id="simBtns"></div>
+  </section>
+
+  <main class="grid">
+    <section class="card">
+      <div class="card-h"><h2>Live network</h2><span id="mapMeta">10 shipments in transit</span></div>
+      <div class="mapbox">
+        <svg class="map" id="map" viewBox="0 0 800 400" role="img" aria-label="Schematic map of shipping lanes between suppliers, ports and destinations">
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" fill="var(--dot)"/></pattern>
+          </defs>
+          <rect width="800" height="400" fill="url(#grid)"/>
+          <g id="lanes"></g>
+          <g id="hlg"></g>
+          <g id="paths" visibility="hidden"></g>
+          <g id="nodes"></g>
+          <g id="dots"></g>
+        </svg>
+      </div>
+      <div class="legend">
+        <span><i class="sq"></i>Supplier</span>
+        <span><i style="background:var(--surface);border:2px solid var(--ink)"></i>Port</span>
+        <span><i class="rg"></i>Destination</span>
+        <span><i style="background:var(--ok)"></i>On time</span>
+        <span><i style="background:var(--warn)"></i>Watch</span>
+        <span><i style="background:var(--crit)"></i>Delayed</span>
+      </div>
+    </section>
+
+    <aside class="card agent" aria-label="AI agent crew">
+      <div class="card-h"><h2>Agent crew</h2><span id="agentState">Watching</span></div>
+      <ol class="pipe" id="pipe">
+        <li data-k="0"><b>Sentinel</b><small>Watches signals</small></li>
+        <li data-k="1"><b>Analyst</b><small>Sizes the impact</small></li>
+        <li data-k="2"><b>Planner</b><small>Compares fixes</small></li>
+        <li data-k="3"><b>Executor</b><small>Applies the plan (simulated)</small></li>
+      </ol>
+      <div class="stream" id="stream" aria-live="polite"></div>
+      <div class="options" id="options"></div>
+      <div class="ask" id="ask">
+        <button class="chip" type="button" data-q="risk">What is at risk?</button>
+        <button class="chip" type="button" data-q="cost">What have your actions cost?</button>
+        <button class="chip" type="button" data-q="why">Why this pick?</button>
+      </div>
+    </aside>
+  </main>
+
+  <section class="card ships">
+    <div class="card-h">
+      <h2>Shipments</h2>
+      <div class="filters" id="filters">
+        <button type="button" data-f="all" aria-pressed="true">All</button>
+        <button type="button" data-f="risk" aria-pressed="false">At risk</button>
+        <button type="button" data-f="ok" aria-pressed="false">On time</button>
+      </div>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>ID</th><th>Cargo</th><th>Route</th><th>Mode</th><th class="num">Transit</th><th>Status</th><th class="num">Value</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="foot">Everything here is simulated and runs in your browser. The agent follows simple rules. To make it real, connect live feeds (vessel tracking, weather, your ERP) and let a language model write the analysis and choose between options.</p>
+</div>
+</section>
+</div>
+</div>
+<script src="data.js"></script>
+<script src="script.js"></script>
+<script src="overview.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
